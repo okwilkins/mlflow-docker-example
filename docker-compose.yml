@@ -25,24 +25,24 @@ services:
     volumes:
       - ./postgres/data:/var/lib/postgresql/data:rw
     restart: unless-stopped
-  # jupyter:
-  #   build:
-  #     dockerfile: ./Dockerfile
-  #     args:
-  #       JUPYTER_USERNAME: ${JUPYTER_USERNAME-jovyan}
-  #       UID: ${UID-1000}
-  #       GID: ${GID-1000}
-  #   image: workspace/jupyter
-  #   container_name: jupyter
-  #   user: ${UID-1000}:${GID-1000}
-  #   command: jupyter notebook --port 8888 --no-browser --ip=0.0.0.0 --notebook-dir ./notebooks
-  #   ports:
-  #     - "${JUPYTER_PORT-8888}:8888"
-  #   environment:
-  #     JUPYTER_ENABLE_LAB: ${JUPYTER_ENABLE_LAB-yes}
-  #     JUPYTER_USERNAME: ${JUPYTER_USERNAME-jovyan}
-  #     JUPYTER_TOKEN: ${JUPYTER_TOKEN}
-  #     JUPYTER_PORT: ${JUPYTER_PORT-8888}
+  mlflow:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./mlflow
+      args:
+        MLFLOW_USERNAME: ${MLFLOW_USERNAME-mlflow}
+        MLFLOW_UID: ${MLFLOW_UID-1000}
+        MLFLOW_GID: ${MLFLOW_GID-1000}
+        MLFLOW_PORT: ${MLFLOW_PORT-5000}
+    container_name: mlflow
+    user: ${MLFLOW_UID-1000}:${MLFLOW_GID-1000}
+    command: >
+      mlflow server
+    ports:
+      - ${MLFLOW_PORT-5000}:5000
+    expose:
+      - 5000
+    restart: unless-stopped
   #   volumes:
   #     - ./data:/home/${JUPYTER_USERNAME-jovyan}/data:rw
   #     - ./notebooks:/home/${JUPYTER_USERNAME-jovyan}/notebooks:rw
