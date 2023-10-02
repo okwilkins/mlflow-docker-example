@@ -1,0 +1,48 @@
+name: docker_mlflow_example
+services:
+  sftp:
+    image: atmoz/sftp
+    container_name: sftp
+    ports:
+      - ${SFTP_PORT-2222}:22
+    command: ${SFTP_USER-mlflow}:${SFTP_PASSWORD}:${SFTP_UID-1000}::data
+    volumes:
+      - ./sftp/data:/home/${SFTP_USER}/data
+  database:
+    build:
+      context: ./postgres/
+      dockerfile: ./Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_DB_USER-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      MLFLOW_DB_USER: ${MLFLOW_DB_USER-mlflow}
+      MLFLOW_DB_PASSWORD: ${MLFLOW_DB_PASSWORD}
+    user: ${POSTGRES_UID-1000}:${POSTGRES_GID-1000}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    expose:
+      - 5432
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data:rw
+    restart: unless-stopped
+  # jupyter:
+  #   build:
+  #     dockerfile: ./Dockerfile
+  #     args:
+  #       JUPYTER_USERNAME: ${JUPYTER_USERNAME-jovyan}
+  #       UID: ${UID-1000}
+  #       GID: ${GID-1000}
+  #   image: workspace/jupyter
+  #   container_name: jupyter
+  #   user: ${UID-1000}:${GID-1000}
+  #   command: jupyter notebook --port 8888 --no-browser --ip=0.0.0.0 --notebook-dir ./notebooks
+  #   ports:
+  #     - "${JUPYTER_PORT-8888}:8888"
+  #   environment:
+  #     JUPYTER_ENABLE_LAB: ${JUPYTER_ENABLE_LAB-yes}
+  #     JUPYTER_USERNAME: ${JUPYTER_USERNAME-jovyan}
+  #     JUPYTER_TOKEN: ${JUPYTER_TOKEN}
+  #     JUPYTER_PORT: ${JUPYTER_PORT-8888}
+  #   volumes:
+  #     - ./data:/home/${JUPYTER_USERNAME-jovyan}/data:rw
+  #     - ./notebooks:/home/${JUPYTER_USERNAME-jovyan}/notebooks:rw
